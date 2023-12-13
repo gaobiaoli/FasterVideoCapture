@@ -69,7 +69,7 @@ class FasterVideoCapture(BaseVideoCapture):
         super().__init__(videoPath, initStep, mtx, dist)
         self.interval = interval
         self.buffer_size = buffer_size
-        self._read_count = 0
+        self._read_count = initStep
         self.frame_buffer = queue.Queue(maxsize=buffer_size)
         self.stop_event = threading.Event()
         self.read_thread = threading.Thread(target=self._preload_frames, daemon=True)
