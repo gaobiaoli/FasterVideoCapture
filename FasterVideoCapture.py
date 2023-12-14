@@ -1,20 +1,33 @@
 import cv2
 import threading
 import queue
+from typing import Union, List
+import numpy as np
 
 
 class BaseVideoCapture:
     """带畸变校正和间隔读取的视频播放器"""
-    def __init__(self, videoPath, initStep=0, mtx=None, dist=None, interval=1) -> None:
+
+    def __init__(
+        self,
+        videoPath: Union[List[str], str],
+        initStep: int = 0,
+        mtx: Union[None, np.array] = None,
+        dist: Union[None, np.array] = None,
+        interval: int = 1,
+    ) -> None:
         self.videoPath = videoPath
         self.mtx = mtx
         self.dist = dist
-        self.capture = cv2.VideoCapture(videoPath)
+        if isinstance(videoPath, str):
+            self.capture = cv2.VideoCapture(self.videoPath)
+        else:
+            self.capture = cv2.VideoCapture(self.videoPath.pop(0))
         self._capture_count = 0
         self.initStep = initStep
         self.skip(step=initStep)
         self.interval = interval
-    
+
     def skip(self, step):
         """跳过step帧"""
         for _ in range(step):
@@ -28,6 +41,9 @@ class BaseVideoCapture:
         ret = self.capture.grab()
         if ret:
             self._capture_count += 1
+        elif isinstance(self.videoPath, list) and len(self.videoPath):
+            self._update(self.videoPath.pop(0))
+            ret = self._grab()
         return ret
 
     def _read(self):
@@ -35,6 +51,10 @@ class BaseVideoCapture:
         ret, frame = self.capture.read()
         if ret:
             self._capture_count += 1
+        elif isinstance(self.videoPath, list) and len(self.videoPath):
+            self.capture.release()
+            self._update(self.videoPath.pop(0))
+            ret, frame = self._read()
         return ret, frame
 
     def read(self, interval=None):
@@ -45,26 +65,37 @@ class BaseVideoCapture:
         ret = self.skip(interval - 1)
         if not ret:
             return False, None
-        
+
         ret, frame = self._read()
         if not ret:
             return False, None
-        
+
         if self.mtx is not None and self.dist is not None:
             frame = cv2.undistort(frame, self.mtx, self.dist)
         return ret, frame
 
+    def _update(self, newVideoPath):
+
+        self.capture = cv2.VideoCapture(newVideoPath)
+
     def release(self):
         self.capture.release()
-        
+
     def count(self):
         return self._capture_count
+
 
 class FasterVideoCapture(BaseVideoCapture):
     VIDEO_END_FLAG = -1
 
     def __init__(
-        self, videoPath, initStep=0, mtx=None, dist=None, interval=1, buffer_size=5
+        self,
+        videoPath: Union[List[str], str],
+        initStep: int = 0,
+        mtx: Union[None, np.array] = None,
+        dist: Union[None, np.array] = None,
+        interval: int = 1,
+        buffer_size: int = 5,
     ) -> None:
         super().__init__(videoPath, initStep, mtx, dist)
         self.interval = interval
