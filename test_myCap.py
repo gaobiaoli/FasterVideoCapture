@@ -1,7 +1,7 @@
 import cv2
 import time
 import numpy as np
-from FasterVideoCapture import BaseVideoCapture, FasterVideoCapture
+from FasterVideoCapture import FasterVideoCapture
 
 
 if __name__ == "__main__":
