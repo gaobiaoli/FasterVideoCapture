@@ -1,16 +1,16 @@
 import cv2
 import time
+import numpy as np
 from FasterVideoCapture import BaseVideoCapture, FasterVideoCapture
 
 
 if __name__ == "__main__":
-    videoPath = [
-        r"F:\researchCode\github\FasterVideoCapture\demo.mp4" for i in range(20)
-    ]
+    videoPath = ["demo/demo.mp4" for _ in range(20)]
+    mtx, dist = np.load("demo/undistort.npy", allow_pickle=True)
     cap = FasterVideoCapture(
-        videoPath=videoPath, initStep=0, interval=200, buffer_size=5
+        videoPath=videoPath, initStep=0, interval=200, buffer_size=5, mtx=mtx, dist=dist
     )
-    # cap=BaseVideoCapture(videoPath=videoPath,interval=400)
+    # cap=BaseVideoCapture(videoPath=videoPath,interval=200,mtx=mtx,dist=dist)
     time.sleep(5)
     cv2.namedWindow("video", cv2.WINDOW_NORMAL)
     while True:

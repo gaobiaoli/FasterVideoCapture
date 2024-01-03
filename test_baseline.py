@@ -2,14 +2,13 @@ import time
 import cv2
 
 if __name__ == "__main__":
-    cap = cv2.VideoCapture("./demo.mp4")
+    cap = cv2.VideoCapture("demo/demo.mp4")
     interval = 200
     time.sleep(3)
     cv2.namedWindow("video", cv2.WINDOW_NORMAL)
     count = 0
     t1 = time.time()
     while True:
-
         ret, frame = cap.read()
         count += 1
         if ret:

@@ -75,7 +75,6 @@ class BaseVideoCapture:
         return ret, frame
 
     def _update(self, newVideoPath):
-
         self.capture = cv2.VideoCapture(newVideoPath)
 
     def release(self):
@@ -124,6 +123,8 @@ class FasterVideoCapture(BaseVideoCapture):
             return False, None
         self._read_count += self.interval
         assert count == self._read_count
+        if self.mtx is not None and self.dist is not None:
+            frame = cv2.undistort(frame, self.mtx, self.dist)
         return True, frame
 
     def release(self):
