@@ -75,6 +75,7 @@ class BaseVideoCapture:
         return ret, frame
 
     def _update(self, newVideoPath):
+        print(f"Update Capture to {newVideoPath}")
         self.capture = cv2.VideoCapture(newVideoPath)
 
     def release(self):
@@ -96,7 +97,7 @@ class FasterVideoCapture(BaseVideoCapture):
         interval: int = 1,
         buffer_size: int = 5,
     ) -> None:
-        super().__init__(videoPath, initStep, mtx, dist)
+        super().__init__(videoPath=videoPath, initStep=initStep, mtx=mtx, dist=dist,interval=interval)
         self.interval = interval
         self.buffer_size = buffer_size
         self._read_count = initStep
@@ -107,12 +108,10 @@ class FasterVideoCapture(BaseVideoCapture):
 
     def _preload_frames(self):
         while not self.stop_event.is_set():
-            success = self.skip(self.interval - 1)
-            if success:
-                ret, frame = self._read()
-                if ret:
-                    self.frame_buffer.put((self._capture_count, frame), block=True)
-            if not success or not ret:
+            ret, frame = super().read()
+            if ret:
+                self.frame_buffer.put((self._capture_count, frame), block=True)
+            else:
                 self.frame_buffer.put(
                     (FasterVideoCapture.VIDEO_END_FLAG, None), block=True
                 )
